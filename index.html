@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Will you be my Valentine?</title>
+  <style>
+    :root{
+      --bg1:#f7c4d7;
+      --bg2:#fbe3ef;
+      --card:#ffffffde;
+      --text:#232323;
+      --muted:#6b6b6b;
+      --yes1:#ff3b86;
+      --yes2:#ff6aa6;
+      --shadow: 0 18px 50px rgba(0,0,0,.18);
+      --radius: 22px;
+      --btn-radius: 999px;
+      --border: rgba(0,0,0,.06);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background:
+        radial-gradient(900px 500px at 20% 20%, var(--bg2), transparent 60%),
+        radial-gradient(900px 500px at 80% 30%, #ffd3e7, transparent 60%),
+        linear-gradient(135deg, var(--bg1), #f8b7cf 40%, #f3a7c6 100%);
+      overflow:hidden;
+    }
+
+    /* subtle floating hearts */
+    .hearts{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.25;
+      filter: blur(.2px);
+    }
+    .heart{
+      position:absolute;
+      width:14px; height:14px;
+      transform: rotate(45deg);
+      background:#ff3b86;
+      border-radius:3px;
+      animation: floatUp linear infinite;
+    }
+    .heart::before, .heart::after{
+      content:"";
+      position:absolute;
+      width:14px; height:14px;
+      background:#ff3b86;
+      border-radius:50%;
+    }
+    .heart::before{ left:-7px; top:0; }
+    .heart::after{ left:0; top:-7px; }
+    @keyframes floatUp{
+      from{ transform: translateY(0) rotate(45deg); opacity:.0; }
+      10%{ opacity:.55; }
+      to{ transform: translateY(-120vh) rotate(45deg); opacity:0; }
+    }
+
+    .card{
+      position:relative;
+      width:min(560px, 92vw);
+      background:var(--card);
+      backdrop-filter: blur(10px);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+      padding:34px 26px 26px;
+    }
+
+    .top{
+      display:grid;
+      place-items:center;
+      gap:14px;
+      margin-bottom:8px;
+    }
+
+    .avatar{
+      width:92px; height:92px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:
+        radial-gradient(40px 40px at 30% 30%, #ffe6bf, #f2b173),
+        radial-gradient(70px 70px at 70% 70%, #f0a964, #e38a3f);
+      box-shadow: 0 10px 25px rgba(255, 59, 134, .20);
+      position:relative;
+    }
+    .avatar .ear{
+      position:absolute;
+      width:18px; height:18px;
+      background:#e38a3f;
+      top:10px;
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      opacity:.9;
+    }
+    .avatar .ear.left{ left:18px; transform: rotate(-12deg); }
+    .avatar .ear.right{ right:18px; transform: rotate(12deg); }
+    .avatar .face{
+      width:60px; height:52px;
+      position:relative;
+    }
+    .avatar .eye{
+      width:8px; height:8px;
+      background:#2b2b2b;
+      border-radius:50%;
+      position:absolute;
+      top:16px;
+    }
+    .avatar .eye.left{ left:10px; }
+    .avatar .eye.right{ right:10px; }
+    .avatar .nose{
+      position:absolute;
+      left:50%;
+      top:26px;
+      transform: translateX(-50%);
+      width:10px; height:10px;
+      background:#ff6aa6;
+      border-radius: 0 0 10px 10px;
+      clip-path: polygon(50% 100%, 0 0, 100% 0);
+    }
+    .avatar .blush{
+      position:absolute;
+      width:14px; height:8px;
+      background:rgba(255,106,166,.35);
+      border-radius:999px;
+      top:28px;
+    }
+    .avatar .blush.left{ left:0px; }
+    .avatar .blush.right{ right:0px; }
+    .avatar .mini-heart{
+      position:absolute;
+      right:-2px;
+      top:4px;
+      font-size:18px;
+      transform: rotate(12deg);
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.12));
+    }
+
+    h1{
+      font-size: 28px;
+      line-height: 1.15;
+      margin: 0;
+      text-align:center;
+      letter-spacing:-.2px;
+    }
+    h1 .name{
+      text-transform: lowercase;
+      font-weight: 800;
+    }
+
+    .btn-area{
+      position:relative;
+      height: 96px;
+      margin-top: 22px;
+    }
+
+    .btn{
+      border:0;
+      font-size: 18px;
+      padding: 14px 26px;
+      border-radius: var(--btn-radius);
+      cursor:pointer;
+      transition: transform .12s ease, filter .12s ease;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active{ transform: scale(.98); }
+
+    .yes{
+      position:absolute;
+      left: 28%;
+      top: 26px;
+      transform: translateX(-50%);
+      padding: 16px 42px;
+      font-weight: 800;
+      color: white;
+      background: linear-gradient(135deg, var(--yes1), var(--yes2));
+      box-shadow: 0 12px 24px rgba(255, 59, 134, .28);
+    }
+    .yes:hover{ filter: brightness(1.02); transform: translateX(-50%) scale(1.02); }
+
+    /* "No" is positioned absolutely and will move around */
+    .no{
+      position:absolute;
+      left: 72%;
+      top: 34px;
+      transform: translateX(-50%);
+      font-weight: 700;
+      color:#222;
+      background: #f1f1f4;
+      border: 1px solid rgba(0,0,0,.08);
+      box-shadow: 0 10px 18px rgba(0,0,0,.10);
+    }
+    .no:hover{ filter: brightness(1.01); }
+
+    .hint{
+      margin-top: 14px;
+      text-align:center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      place-items:center;
+      padding:18px;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(4px);
+    }
+    .modal.open{ display:grid; }
+
+    .modal-card{
+      width:min(520px, 92vw);
+      background:white;
+      border-radius: 22px;
+      padding: 22px 20px;
+      box-shadow: 0 22px 70px rgba(0,0,0,.35);
+      text-align:center;
+      border:1px solid rgba(0,0,0,.06);
+    }
+    .modal-card h2{
+      margin: 10px 0 6px;
+      font-size: 26px;
+      letter-spacing:-.2px;
+    }
+    .modal-card p{
+      margin:0 0 16px;
+      color:#444;
+      line-height:1.4;
+    }
+    .close{
+      background:#111;
+      color:#fff;
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-weight:700;
+    }
+
+    /* confetti */
+    canvas#confetti{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+    }
+
+    @media (max-width:420px){
+      .yes{ left: 30%; }
+      .no{ left: 74%; }
+      h1{ font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hearts" aria-hidden="true" id="hearts"></div>
+  <canvas id="confetti"></canvas>
+
+  <main class="card" role="main">
+    <div class="top">
+      <div class="avatar" aria-hidden="true">
+        <div class="ear left"></div>
+        <div class="ear right"></div>
+        <div class="mini-heart">💗</div>
+        <div class="face">
+          <div class="eye left"></div>
+          <div class="eye right"></div>
+          <div class="nose"></div>
+          <div class="blush left"></div>
+          <div class="blush right"></div>
+        </div>
+      </div>
+
+      <h1><span class="name" id="name">nirali</span> will you be my valentine?</h1>
+    </div>
+
+    <section class="btn-area" id="arena" aria-label="Valentine buttons">
+      <button class="btn yes" id="yesBtn">Yes</button>
+      <button class="btn no" id="noBtn" aria-label="No (very shy)">No</button>
+    </section>
+
+    <div class="hint" id="hint">“No” seems a bit shy 😈</div>
+  </main>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div style="font-size:44px;">🥰💐</div>
+      <h2 id="modalTitle">Yay!!</h2>
+      <p id="modalText">Best decision ever. Dinner + dessert on me ❤️</p>
+      <button class="btn close" id="closeBtn">Aww okay</button>
+    </div>
+  </div>
+
+  <script>
+    // --- quick personalization ---
+    // Change these two lines to your wife’s name + your message:
+    const WIFE_NAME = "Nirali";
+    const YES_MESSAGE = "Best decision ever. Dinner + dessert on me ❤️";
+
+    // apply
+    document.getElementById("name").textContent = WIFE_NAME.toLowerCase();
+    document.getElementById("modalText").textContent = YES_MESSAGE;
+
+    // --- floating hearts background ---
+    const heartsWrap = document.getElementById("hearts");
+    const makeHeart = () => {
+      const h = document.createElement("div");
+      h.className = "heart";
+      const left = Math.random() * 100;
+      const size = 10 + Math.random() * 16;
+      const dur = 6 + Math.random() * 8;
+      const delay = Math.random() * 2;
+      h.style.left = left + "vw";
+      h.style.bottom = (-20 - Math.random()*30) + "px";
+      h.style.width = size + "px";
+      h.style.height = size + "px";
+      h.style.animationDuration = dur + "s";
+      h.style.animationDelay = delay + "s";
+      h.style.opacity = 0.1 + Math.random() * 0.35;
+      heartsWrap.appendChild(h);
+      setTimeout(() => h.remove(), (dur + delay) * 1000 + 200);
+    };
+    for (let i = 0; i < 18; i++) makeHeart();
+    setInterval(makeHeart, 700);
+
+    // --- "No" button dodging logic ---
+    const arena = document.getElementById("arena");
+    const noBtn = document.getElementById("noBtn");
+
+    // Ensure arena is a bounding box for the button to move within
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+    function moveNoButton() {
+      const a = arena.getBoundingClientRect();
+      const b = noBtn.getBoundingClientRect();
+
+      const padding = 10;
+      const maxX = a.width - b.width - padding;
+      const maxY = a.height - b.height - padding;
+
+      // pick a new random position
+      let x = Math.random() * maxX + padding;
+      let y = Math.random() * maxY + padding;
+
+      // set position relative to arena
+      noBtn.style.left = x + "px";
+      noBtn.style.top  = y + "px";
+      noBtn.style.transform = "translateX(0)"; // we switch from %-based centering to px positioning
+    }
+
+    // On first layout, convert to px positioning so random placement is consistent
+    function initNoButtonPxPos(){
+      const a = arena.getBoundingClientRect();
+      const b = noBtn.getBoundingClientRect();
+      const x = b.left - a.left;
+      const y = b.top - a.top;
+      noBtn.style.left = x + "px";
+      noBtn.style.top  = y + "px";
+      noBtn.style.transform = "translateX(0)";
+    }
+    window.addEventListener("load", () => {
+      initNoButtonPxPos();
+      // keep it from escaping if the viewport changes
+      window.addEventListener("resize", () => initNoButtonPxPos());
+    });
+
+    // Hover + touch dodge (mobile-friendly)
+    noBtn.addEventListener("mouseenter", moveNoButton);
+    noBtn.addEventListener("mouseover", moveNoButton);
+    noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); moveNoButton(); }, {passive:false});
+    // If they somehow click "No", still dodge
+    noBtn.addEventListener("click", (e) => { e.preventDefault(); moveNoButton(); });
+
+    // --- Yes modal + confetti ---
+    const yesBtn = document.getElementById("yesBtn");
+    const modal = document.getElementById("modal");
+    const closeBtn = document.getElementById("closeBtn");
+
+    yesBtn.addEventListener("click", () => {
+      modal.classList.add("open");
+      startConfetti();
+    });
+    closeBtn.addEventListener("click", () => modal.classList.remove("open"));
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) modal.classList.remove("open");
+    });
+
+    // Minimal confetti (no libraries)
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+    let confettiTimer = null;
+    let pieces = [];
+    function resizeCanvas(){
+      canvas.width = window.innerWidth * devicePixelRatio;
+      canvas.height = window.innerHeight * devicePixelRatio;
+      ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function startConfetti(){
+      pieces = [];
+      const count = 160;
+      for (let i=0;i<count;i++){
+        pieces.push({
+          x: Math.random() * window.innerWidth,
+          y: -20 - Math.random()*window.innerHeight*0.3,
+          r: 3 + Math.random()*4,
+          vx: -2 + Math.random()*4,
+          vy: 2 + Math.random()*5,
+          rot: Math.random()*Math.PI,
+          vr: -0.15 + Math.random()*0.3,
+          // pink/red/white-ish palette
+          c: ["#ff3b86","#ff6aa6","#ffffff","#ffd1e6","#ff2d55"][Math.floor(Math.random()*5)],
+          a: 0.7 + Math.random()*0.3
+        });
+      }
+
+      const start = performance.now();
+      const durationMs = 2600;
+
+      if (confettiTimer) cancelAnimationFrame(confettiTimer);
+
+      const tick = (t) => {
+        ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+
+        pieces.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.03; // gravity
+          p.rot += p.vr;
+
+          // wrap a bit horizontally
+          if (p.x < -20) p.x = window.innerWidth + 20;
+          if (p.x > window.innerWidth + 20) p.x = -20;
+
+          ctx.save();
+          ctx.globalAlpha = p.a;
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.c;
+          ctx.fillRect(-p.r, -p.r, p.r*2.2, p.r*1.6);
+          ctx.restore();
+        });
+
+        if (t - start < durationMs){
+          confettiTimer = requestAnimationFrame(tick);
+        } else {
+          ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
+        }
+      };
+      confettiTimer = requestAnimationFrame(tick);
+    }
+  </script>
+</body>
+</html>
