@@ -827,6 +827,7 @@
         player.pauseVideo();
       } else {
         player.playVideo();
+        attemptUnmute();
       }
     };
 
@@ -843,12 +844,19 @@
           disablekb: 1,
           fs: 0,
           modestbranding: 1,
-          playsinline: 1
+          playsinline: 1,
+          mute: 1
         },
         events: {
           onReady: (event) => {
+            event.target.mute();
             event.target.playVideo();
             setButtonState(true);
+            setTimeout(attemptUnmute, 900);
+            const iframe = event.target.getIframe();
+            if (iframe) {
+              iframe.setAttribute("allow", "autoplay; encrypted-media");
+            }
           },
           onStateChange: (event) => {
             if (event.data === YT.PlayerState.ENDED) {
@@ -866,6 +874,14 @@
       });
     }
 
+    const attemptUnmute = () => {
+      if (!player || !player.isMuted) return;
+      if (player.isMuted()) {
+        player.unMute();
+        player.setVolume(80);
+      }
+    };
+
     const attemptAutoPlay = () => {
       if (autoPlayAttempted) return;
       autoPlayAttempted = true;
@@ -876,6 +892,9 @@
     };
 
     window.addEventListener("load", attemptAutoPlay);
+    ["click", "touchstart", "keydown"].forEach((eventName) => {
+      document.addEventListener(eventName, attemptUnmute, { once: true });
+    });
   </script>
 </body>
 </html>
