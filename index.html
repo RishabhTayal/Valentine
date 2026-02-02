@@ -308,33 +308,25 @@
 
     /* Music player styles */
     .music-section{
-      margin-top: 24px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-    }
-    .music-label{
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--text);
-      text-align: center;
-    }
-    .music-controls-simple{
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 20;
     }
     .music-btn{
-      padding: 10px 20px;
+      width: 44px;
+      height: 44px;
       border: none;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
+      border-radius: 999px;
+      font-size: 18px;
+      font-weight: 700;
       cursor: pointer;
       transition: all .2s ease;
       background: linear-gradient(135deg, var(--yes1), var(--yes2));
       color: white;
-      box-shadow: 0 4px 12px rgba(255, 59, 134, .25);
+      box-shadow: 0 6px 14px rgba(255, 59, 134, .25);
+      display: grid;
+      place-items: center;
     }
     .music-btn:hover{
       filter: brightness(1.05);
@@ -343,16 +335,9 @@
     .music-btn:active{
       transform: scale(.98);
     }
-    .music-btn.stop{
+    .music-btn.is-paused{
       background: linear-gradient(135deg, #6b6b6b, #8b8b8b);
       box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
-    }
-    .music-status{
-      margin-top: 8px;
-      text-align: center;
-      font-size: 12px;
-      color: var(--muted);
-      min-height: 18px;
     }
     #youtube-player{
       position: absolute;
@@ -446,13 +431,9 @@
 
     <div class="hint" id="hint">“No” seems a bit shy 😈</div>
 
-    <!-- Music player section -->
+    <!-- Music control -->
     <div class="music-section">
-      <div class="music-label">🎵 Background Music</div>
-      <div class="music-controls-simple">
-        <button class="music-btn" id="play-btn" aria-label="Play music">Play Music</button>
-      </div>
-      <div class="music-status" id="music-status">⏳ Loading music...</div>
+      <button class="music-btn is-paused" id="play-btn" aria-label="Play background music">▶</button>
     </div>
   </main>
 
@@ -773,67 +754,55 @@
     }
 
     const playBtn = document.getElementById('play-btn');
-    const musicStatus = document.getElementById('music-status');
+    let autoPlayAttempted = false;
 
-    playBtn.addEventListener('click', () => {
+    const setButtonState = (isPlaying) => {
+      playBtn.textContent = isPlaying ? "⏸" : "▶";
+      playBtn.setAttribute(
+        "aria-label",
+        isPlaying ? "Pause background music" : "Play background music"
+      );
+      playBtn.classList.toggle("is-paused", !isPlaying);
+    };
+
+    const ensurePlayerReady = (videoId) => {
+      if (player) return;
+      if (!isPlayerReady) {
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds total
+        const checkReady = setInterval(() => {
+          attempts++;
+          if (isPlayerReady || (window.YT && window.YT.Player)) {
+            clearInterval(checkReady);
+            createPlayer(videoId);
+          } else if (attempts >= maxAttempts) {
+            clearInterval(checkReady);
+          }
+        }, 100);
+      } else {
+        createPlayer(videoId);
+      }
+    };
+
+    const togglePlayback = () => {
       const url = YOUTUBE_URL;
-      
-      if (!url) {
-        musicStatus.textContent = '⚠️ No YouTube URL configured';
-        musicStatus.style.color = '#ff3b86';
-        return;
-      }
-
       const videoId = extractVideoId(url);
-      
-      if (!videoId) {
-        musicStatus.textContent = '⚠️ Invalid YouTube URL in code';
-        musicStatus.style.color = '#ff3b86';
-        return;
-      }
+      if (!videoId) return;
 
       if (!player) {
-        // Create player for the first time
-        if (!isPlayerReady) {
-          musicStatus.textContent = '⏳ Loading YouTube player...';
-          musicStatus.style.color = '#6b6b6b';
-          // Wait for API to be ready with timeout
-          let attempts = 0;
-          const maxAttempts = 50; // 5 seconds total
-          const checkReady = setInterval(() => {
-            attempts++;
-            if (isPlayerReady || window.YT && window.YT.Player) {
-              clearInterval(checkReady);
-              createPlayer(videoId);
-            } else if (attempts >= maxAttempts) {
-              clearInterval(checkReady);
-              musicStatus.textContent = '❌ Failed to load YouTube player';
-              musicStatus.style.color = '#ff3b86';
-            }
-          }, 100);
-        } else {
-          createPlayer(videoId);
-        }
-      } else {
-        // Player exists, check if playing or stopped
-        const state = player.getPlayerState();
-        if (state === 1) {
-          // Currently playing, so stop
-          player.stopVideo();
-          playBtn.textContent = 'Play Music';
-          playBtn.classList.remove('stop');
-          musicStatus.textContent = '⏹️ Music stopped';
-          musicStatus.style.color = '#6b6b6b';
-        } else {
-          // Resume or replay
-          player.playVideo();
-          playBtn.textContent = 'Stop';
-          playBtn.classList.add('stop');
-          musicStatus.textContent = '🎵 Playing music...';
-          musicStatus.style.color = '#ff3b86';
-        }
+        ensurePlayerReady(videoId);
+        return;
       }
-    });
+
+      const state = player.getPlayerState();
+      if (state === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+      } else {
+        player.playVideo();
+      }
+    };
+
+    playBtn.addEventListener('click', togglePlayback);
 
     function createPlayer(videoId) {
       player = new YT.Player('youtube-player', {
@@ -851,38 +820,34 @@
         events: {
           onReady: (event) => {
             event.target.playVideo();
-            playBtn.textContent = 'Stop';
-            playBtn.classList.add('stop');
-            musicStatus.textContent = '🎵 Playing music...';
-            musicStatus.style.color = '#ff3b86';
+            setButtonState(true);
           },
           onStateChange: (event) => {
             if (event.data === YT.PlayerState.ENDED) {
-              playBtn.textContent = 'Play';
-              playBtn.classList.remove('stop');
-              musicStatus.textContent = '✓ Music ended';
-              musicStatus.style.color = '#6b6b6b';
+              setButtonState(false);
             } else if (event.data === YT.PlayerState.PLAYING) {
-              playBtn.textContent = 'Stop';
-              playBtn.classList.add('stop');
-              musicStatus.textContent = '🎵 Playing music...';
-              musicStatus.style.color = '#ff3b86';
+              setButtonState(true);
             } else if (event.data === YT.PlayerState.PAUSED) {
-              playBtn.textContent = 'Play';
-              playBtn.classList.remove('stop');
-              musicStatus.textContent = '⏸️ Music paused';
-              musicStatus.style.color = '#6b6b6b';
+              setButtonState(false);
             }
           },
-          onError: (event) => {
-            musicStatus.textContent = '❌ Error loading video';
-            musicStatus.style.color = '#ff3b86';
-            playBtn.textContent = 'Play';
-            playBtn.classList.remove('stop');
+          onError: () => {
+            setButtonState(false);
           }
         }
       });
     }
+
+    const attemptAutoPlay = () => {
+      if (autoPlayAttempted) return;
+      autoPlayAttempted = true;
+      const videoId = extractVideoId(YOUTUBE_URL);
+      if (videoId) {
+        ensurePlayerReady(videoId);
+      }
+    };
+
+    window.addEventListener("load", attemptAutoPlay);
   </script>
 </body>
 </html>
