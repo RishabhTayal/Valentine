@@ -34,14 +34,15 @@
       overflow:hidden;
     }
 
-    /* subtle floating hearts */
-    .hearts{
+    /* subtle romantic animations container */
+    .animation-container{
       position:fixed;
       inset:0;
       pointer-events:none;
       opacity:.25;
-      filter: blur(.2px);
     }
+    
+    /* Animation 1: Floating hearts */
     .heart{
       position:absolute;
       width:14px; height:14px;
@@ -60,9 +61,93 @@
     .heart::before{ left:-7px; top:0; }
     .heart::after{ left:0; top:-7px; }
     @keyframes floatUp{
-      from{ transform: translateY(0) rotate(45deg); opacity:.0; }
+      from{ transform: translateY(0) rotate(45deg); opacity:0; }
       10%{ opacity:.55; }
       to{ transform: translateY(-120vh) rotate(45deg); opacity:0; }
+    }
+    
+    /* Animation 2: Falling rose petals */
+    .petal{
+      position:absolute;
+      width:12px; height:16px;
+      background: linear-gradient(135deg, #ff6aa6, #ff3b86);
+      border-radius: 50% 0 50% 0;
+      animation: fallDown linear infinite;
+    }
+    @keyframes fallDown{
+      from{ 
+        transform: translateY(-100px) rotate(0deg); 
+        opacity:0; 
+      }
+      10%{ opacity:.6; }
+      to{ 
+        transform: translateY(120vh) rotate(360deg); 
+        opacity:0; 
+      }
+    }
+    
+    /* Animation 3: Twinkling sparkles */
+    .sparkle{
+      position:absolute;
+      width:8px; height:8px;
+      background:#ffe6f0;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      animation: twinkle linear infinite;
+    }
+    @keyframes twinkle{
+      0%, 100%{ 
+        transform: scale(0) rotate(0deg); 
+        opacity:0; 
+      }
+      50%{ 
+        transform: scale(1.5) rotate(180deg); 
+        opacity:.7; 
+      }
+    }
+    
+    /* Animation 4: Floating butterflies */
+    .butterfly{
+      position:absolute;
+      width:16px; height:12px;
+      animation: butterflyFloat linear infinite;
+    }
+    .butterfly::before, .butterfly::after{
+      content:"";
+      position:absolute;
+      width:8px; height:12px;
+      background: linear-gradient(135deg, #ff6aa6, #ffd1e6);
+      border-radius: 70% 30% 70% 30%;
+      top:0;
+    }
+    .butterfly::before{ 
+      left:0; 
+      transform: rotate(-10deg);
+      animation: wingLeft 1.5s ease-in-out infinite;
+    }
+    .butterfly::after{ 
+      right:0; 
+      transform: rotate(10deg);
+      animation: wingRight 1.5s ease-in-out infinite;
+    }
+    @keyframes butterflyFloat{
+      from{ 
+        transform: translateY(0) translateX(0); 
+        opacity:0; 
+      }
+      10%{ opacity:.5; }
+      50%{ transform: translateY(-60vh) translateX(30px); }
+      to{ 
+        transform: translateY(-120vh) translateX(-20px); 
+        opacity:0; 
+      }
+    }
+    @keyframes wingLeft{
+      0%, 100%{ transform: rotate(-10deg) scaleX(1); }
+      50%{ transform: rotate(-30deg) scaleX(0.7); }
+    }
+    @keyframes wingRight{
+      0%, 100%{ transform: rotate(10deg) scaleX(1); }
+      50%{ transform: rotate(30deg) scaleX(0.7); }
     }
 
     .card{
@@ -327,7 +412,7 @@
   <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 <body>
-  <div class="hearts" aria-hidden="true" id="hearts"></div>
+  <div class="animation-container" aria-hidden="true" id="animation-container"></div>
   <canvas id="confetti"></canvas>
 
   <main class="card" role="main">
@@ -388,27 +473,108 @@
     document.getElementById("name").textContent = WIFE_NAME.toLowerCase();
     document.getElementById("modalText").textContent = YES_MESSAGE;
 
-    // --- floating hearts background ---
-    const heartsWrap = document.getElementById("hearts");
-    const makeHeart = () => {
-      const h = document.createElement("div");
-      h.className = "heart";
-      const left = Math.random() * 100;
-      const size = 10 + Math.random() * 16;
-      const dur = 6 + Math.random() * 8;
-      const delay = Math.random() * 2;
-      h.style.left = left + "vw";
-      h.style.bottom = (-20 - Math.random()*30) + "px";
-      h.style.width = size + "px";
-      h.style.height = size + "px";
-      h.style.animationDuration = dur + "s";
-      h.style.animationDelay = delay + "s";
-      h.style.opacity = 0.1 + Math.random() * 0.35;
-      heartsWrap.appendChild(h);
-      setTimeout(() => h.remove(), (dur + delay) * 1000 + 200);
+    // --- randomized romantic background animations ---
+    const animationContainer = document.getElementById("animation-container");
+    
+    // Define different animation types
+    const animationTypes = [
+      {
+        name: "hearts",
+        className: "heart",
+        count: 18,
+        interval: 700,
+        styleGenerator: () => {
+          const size = 10 + Math.random() * 16;
+          return {
+            left: Math.random() * 100 + "vw",
+            bottom: (-20 - Math.random()*30) + "px",
+            width: size + "px",
+            height: size + "px",
+            animationDuration: (6 + Math.random() * 8) + "s",
+            animationDelay: Math.random() * 2 + "s",
+            opacity: 0.1 + Math.random() * 0.35
+          };
+        }
+      },
+      {
+        name: "petals",
+        className: "petal",
+        count: 20,
+        interval: 600,
+        styleGenerator: () => {
+          const size = 8 + Math.random() * 12;
+          return {
+            left: Math.random() * 100 + "vw",
+            top: (-20 - Math.random()*30) + "px",
+            width: size + "px",
+            height: size * 1.3 + "px",
+            animationDuration: (8 + Math.random() * 10) + "s",
+            animationDelay: Math.random() * 3 + "s",
+            opacity: 0.15 + Math.random() * 0.4
+          };
+        }
+      },
+      {
+        name: "sparkles",
+        className: "sparkle",
+        count: 15,
+        interval: 900,
+        styleGenerator: () => {
+          const size = 6 + Math.random() * 8;
+          return {
+            left: Math.random() * 100 + "vw",
+            top: Math.random() * 100 + "vh",
+            width: size + "px",
+            height: size + "px",
+            animationDuration: (2 + Math.random() * 3) + "s",
+            animationDelay: Math.random() * 2 + "s",
+            opacity: 0.2 + Math.random() * 0.5
+          };
+        }
+      },
+      {
+        name: "butterflies",
+        className: "butterfly",
+        count: 12,
+        interval: 1200,
+        styleGenerator: () => {
+          const size = 12 + Math.random() * 10;
+          return {
+            left: Math.random() * 100 + "vw",
+            bottom: (-20 - Math.random()*30) + "px",
+            width: size + "px",
+            height: size * 0.75 + "px",
+            animationDuration: (10 + Math.random() * 12) + "s",
+            animationDelay: Math.random() * 2 + "s",
+            opacity: 0.15 + Math.random() * 0.35
+          };
+        }
+      }
+    ];
+    
+    // Randomly select an animation type for this page load
+    const selectedAnimation = animationTypes[Math.floor(Math.random() * animationTypes.length)];
+    
+    // Create animation elements
+    const makeAnimationElement = () => {
+      const elem = document.createElement("div");
+      elem.className = selectedAnimation.className;
+      
+      const styles = selectedAnimation.styleGenerator();
+      Object.assign(elem.style, styles);
+      
+      animationContainer.appendChild(elem);
+      
+      const duration = parseFloat(styles.animationDuration) * 1000;
+      const delay = parseFloat(styles.animationDelay) * 1000;
+      setTimeout(() => elem.remove(), duration + delay + 200);
     };
-    for (let i = 0; i < 18; i++) makeHeart();
-    setInterval(makeHeart, 700);
+    
+    // Initialize animation
+    for (let i = 0; i < selectedAnimation.count; i++) {
+      makeAnimationElement();
+    }
+    setInterval(makeAnimationElement, selectedAnimation.interval);
 
     // --- "No" button dodging logic ---
     const arena = document.getElementById("arena");
