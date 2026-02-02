@@ -361,7 +361,7 @@
       <div class="music-controls-simple">
         <button class="music-btn" id="play-btn" aria-label="Play music">Play Music</button>
       </div>
-      <div class="music-status" id="music-status"></div>
+      <div class="music-status" id="music-status">⏳ Loading music...</div>
     </div>
   </main>
 
@@ -546,6 +546,11 @@
     // This function creates the player after the API code downloads.
     window.onYouTubeIframeAPIReady = function() {
       isPlayerReady = true;
+      // Auto-play music on page load
+      const videoId = extractVideoId(YOUTUBE_URL);
+      if (videoId) {
+        createPlayer(videoId);
+      }
     };
 
     function extractVideoId(url) {
