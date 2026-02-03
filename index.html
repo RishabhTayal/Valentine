@@ -302,6 +302,63 @@
       color: var(--muted);
     }
 
+    .mini-game{
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.65);
+      border: 1px solid rgba(255,255,255,.65);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+      text-align:center;
+      display:grid;
+      gap: 12px;
+    }
+    .mini-game h2{
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -.2px;
+    }
+    .mini-game .question{
+      font-size: 15px;
+      color: #3a3a3a;
+    }
+    .options{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
+    .option-btn{
+      border: 1px solid rgba(0,0,0,.08);
+      background: #fff;
+      border-radius: 16px;
+      padding: 10px 12px;
+      font-size: 14px;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+      box-shadow: 0 6px 12px rgba(0,0,0,.08);
+    }
+    .option-btn:hover{
+      transform: translateY(-1px);
+      background: #fff7fb;
+    }
+    .mini-game .result{
+      font-size: 14px;
+      min-height: 20px;
+      color:#444;
+    }
+    .mini-game .replay{
+      justify-self:center;
+      padding: 10px 18px;
+      font-size: 14px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #ff86b7, #ff6aa6);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 18px rgba(255, 59, 134, .2);
+    }
+
     /* Music player styles */
     .music-section{
       position: fixed;
@@ -418,6 +475,14 @@
 
     <div class="hint" id="hint">“No” seems a bit shy 😈</div>
 
+    <section class="mini-game" aria-live="polite">
+      <h2>Daily mini-game 💌</h2>
+      <p class="question" id="miniQuestion">Loading your love question...</p>
+      <div class="options" id="miniOptions" aria-label="Answer choices"></div>
+      <p class="result" id="miniResult"></p>
+      <button class="replay" id="miniReplay" type="button">New love quiz</button>
+    </section>
+
     <!-- Music control -->
     <div class="music-section">
       <button class="music-btn is-paused" id="play-btn" aria-label="Play background music">▶</button>
@@ -443,6 +508,50 @@
       "music/James Blunt - You're Beautiful (Official Music Video) [4K].mp3",
       "music/Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster).mp3",
       "music/Rockstar_ Tum Ho (Lyrical Video) Song _ Ranbir Kapoor _ Nargis _ A R Rahman, Mohit Chauhan.mp3"
+    ];
+    const MINI_GAME_QUESTIONS = [
+      {
+        question: "Which snack did we 'rescue' from the wrong cart during that grocery run when we couldn’t stop giggling?",
+        options: ["Cinnamon rolls", "Spicy jalapeño chips", "Mini mochi ice cream", "Cheddar popcorn"],
+        correctIndex: 2,
+        successMessage: "Memory queen! 💖 Reward: first pick of tonight’s cozy movie + a forehead kiss.",
+        failMessage: "Close, sweetheart! You owe me a quick kiss and a rematch. 😉"
+      },
+      {
+        question: "What nickname did you give my half-awake Saturday pancakes?",
+        options: ["Sleepy stacks", "Dreamy flips", "Snore cakes", "Pillow pancakes"],
+        correctIndex: 0,
+        successMessage: "Yesss, you remembered! 🥞 Reward: I’ll make them again with extra syrup love.",
+        failMessage: "Not quite! I’ll still make you pancakes—just to win my way back."
+      },
+      {
+        question: "Where did we have that tiny dance in the kitchen because our song came on?",
+        options: ["By the sink", "Next to the fridge", "In front of the stove", "By the pantry"],
+        correctIndex: 1,
+        successMessage: "Correct! 💃 Reward: one slow dance in the kitchen tonight.",
+        failMessage: "Nope, but I’ll spin you anyway. Come here, dance partner. 🫶"
+      },
+      {
+        question: "Which movie made us both whisper ‘just one more scene’... five times?",
+        options: ["The rom‑com with the umbrella kiss", "The baking competition finale", "The heist with the tux", "The cozy cabin mystery"],
+        correctIndex: 3,
+        successMessage: "You got it! 🍿 Reward: I’ll brew your favorite drink for our next cozy watch.",
+        failMessage: "Almost! I still owe you cuddles, so you win anyway."
+      },
+      {
+        question: "What’s the quickest way to make me melt on a long day?",
+        options: ["Your shoulder squeeze", "That tiny nose boop", "Your ‘hey handsome’ text", "A surprise hug from behind"],
+        correctIndex: 3,
+        successMessage: "Correct! 🫠 Reward: I’m claiming one of those right now.",
+        failMessage: "Nice try! You can test all four… for science."
+      },
+      {
+        question: "Which dessert always makes us split the last bite like a dramatic rom‑com?",
+        options: ["Chocolate lava cake", "Tiramisu", "Strawberry cheesecake", "Warm brownies + ice cream"],
+        correctIndex: 0,
+        successMessage: "Sweet victory! 🍫 Reward: I’ll share the last bite and a kiss.",
+        failMessage: "Nope, but I’ll still share the last bite—because you’re my favorite."
+      }
     ];
 
     // apply
@@ -814,6 +923,46 @@
       loadRandomTrack();
       attemptPlay();
     });
+
+    // --- Daily mini-game ---
+    const miniQuestion = document.getElementById("miniQuestion");
+    const miniOptions = document.getElementById("miniOptions");
+    const miniResult = document.getElementById("miniResult");
+    const miniReplay = document.getElementById("miniReplay");
+    let lastQuestionIndex = -1;
+
+    const pickRandomQuestionIndex = () => {
+      if (MINI_GAME_QUESTIONS.length === 1) return 0;
+      let index = 0;
+      do {
+        index = Math.floor(Math.random() * MINI_GAME_QUESTIONS.length);
+      } while (index === lastQuestionIndex);
+      return index;
+    };
+
+    const renderMiniGame = () => {
+      const index = pickRandomQuestionIndex();
+      lastQuestionIndex = index;
+      const current = MINI_GAME_QUESTIONS[index];
+      miniQuestion.textContent = current.question;
+      miniResult.textContent = "";
+      miniOptions.replaceChildren();
+
+      current.options.forEach((option, optionIndex) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "option-btn";
+        button.textContent = option;
+        button.addEventListener("click", () => {
+          const isCorrect = optionIndex === current.correctIndex;
+          miniResult.textContent = isCorrect ? current.successMessage : current.failMessage;
+        });
+        miniOptions.appendChild(button);
+      });
+    };
+
+    miniReplay.addEventListener("click", renderMiniGame);
+    window.addEventListener("load", renderMiniGame);
   </script>
 </body>
 </html>
